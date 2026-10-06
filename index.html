@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPI Informatika MTs - Analisis Efisiensi Aplikasi Dokumen</title>
+    
+    <style>
+        :root {
+            --primary-dark: #064E3B;
+            --primary: #047857;
+            --primary-light: #10B981;
+            --primary-subtle: #ECFDF5;
+            --gold-dark: #B45309;
+            --gold: #D97706;
+            --gold-light: #FBBF24;
+            --gold-subtle: #FEF3C7;
+            --bg-main: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --correct-color: #059669;
+            --wrong-color: #DC2626;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.12);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        /* Cover Overlay / Cover Pembuka */
+        .cover-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(4, 30, 20, 0.94);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+
+        .cover-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .cover-card {
+            background: linear-gradient(145deg, #ffffff, #f0fdf4);
+            max-width: 680px;
+            width: 100%;
+            border-radius: var(--radius-lg);
+            padding: 32px 24px;
+            text-align: center;
+            border: 3px solid var(--gold);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+            position: relative;
+            animation: coverPop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes coverPop {
+            from { transform: scale(0.88); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .cover-badge {
+            display: inline-block;
+            background: var(--gold);
+            color: #261600;
+            font-weight: 800;
+            font-size: 0.82rem;
+            padding: 6px 16px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .cover-photo-container {
+            margin: 8px auto 14px auto;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--gold);
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            background: #ffffff;
+        }
+
+        .cover-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .teacher-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 2px solid var(--gold-light);
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .cover-title {
+            font-size: 1.65rem;
+            color: var(--primary-dark);
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 8px;
+        }
+
+        .cover-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .cover-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background: #ffffff;
+            border: 2px dashed var(--primary-light);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 22px;
+            text-align: left;
+        }
+
+        @media (max-width: 580px) {
+            .cover-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .cover-info-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .cover-info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-subtle);
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            border: 1px solid var(--primary-light);
+        }
+
+        .cover-info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            display: block;
+        }
+
+        .cover-info-val {
+            font-weight: 700;
+            color: var(--primary-dark);
+            line-height: 1.2;
+        }
+
+        .btn-enter-app {
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+            color: white;
+            font-size: 1.05rem;
+            font-weight: 800;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(217, 119, 6, 0.4);
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-enter-app:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(217, 119, 6, 0.5);
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+        }
+
+        /* Running Text / Marquee Banner */
+        .marquee-banner {
+            background: #0f172a;
+            color: #fbbf24;
+            padding: 8px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            border-bottom: 3px solid var(--gold);
+            font-size: 0.88rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3);
+        }
+
+        .marquee-track {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marqueeAnim 28s linear infinite;
+        }
+
+        .marquee-banner:hover .marquee-track {
+            animation-play-state: paused;
+        }
+
+        @keyframes marqueeAnim {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .marquee-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 40px;
+            color: #f1f5f9;
+        }
+
+        .marquee-highlight {
+            color: #FBBF24;
+            font-weight: 800;
+        }
+
+        .marquee-badge {
+            background: var(--gold);
+            color: #0f172a;
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+        }
+
+        /* Header Style */
+        .header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+            padding: 22px 16px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            position: relative;
+        }
+
+        .header-top-nav {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-cover-toggle, .btn-config-toggle {
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cover-toggle:hover, .btn-config-toggle:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .header-badge {
+            display: inline-block;
+            background-color: var(--gold);
+            color: #261600;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .teacher-info {
+            margin-top: 12px;
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.12);
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            padding: 6px;
+            gap: 6px;
+            margin-top: -20px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-align: center;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: var(--primary-subtle);
+            color: var(--primary-dark);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            color: var(--primary-dark);
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid var(--primary-subtle);
+            padding-bottom: 8px;
+        }
+
+        .gorontalo-badge {
+            background: var(--gold-subtle);
+            border-left: 4px solid var(--gold);
+            padding: 12px 16px;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            color: var(--gold-dark);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+            margin-top: 16px;
+        }
+
+        .app-card {
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            transition: all 0.3s ease;
+            position: relative;
+            background: #FAFAFA;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .app-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+
+        .bg-word { background-color: #2B579A; }
+        .bg-excel { background-color: #217346; }
+        .bg-ppt { background-color: #D24726; }
+        .bg-graphic { background-color: #7B1FA2; }
+
+        .app-card h3 {
+            font-size: 1.15rem;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .app-card-tech {
+            background: #F1F5F9;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 0.8rem;
+            margin: 8px 0;
+            color: #334155;
+        }
+
+        .app-card ul {
+            list-style-type: disc;
+            padding-left: 20px;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .app-card ul li {
+            margin-bottom: 4px;
+        }
+
+        .simulator-box {
+            background: #F0FDF4;
+            border: 2px dashed var(--primary-light);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .slider-group {
+            margin-bottom: 18px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #CBD5E1;
+            outline: none;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .analysis-result {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-top: 16px;
+            border: 2px solid var(--primary-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .app-meter {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .meter-label {
+            width: 130px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .meter-bar-bg {
+            flex: 1;
+            height: 14px;
+            background: #E2E8F0;
+            border-radius: 7px;
+            overflow: hidden;
+        }
+
+        .meter-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .meter-score {
+            width: 45px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-align: right;
+            color: var(--primary-dark);
+        }
+
+        .quiz-section-header {
+            background: var(--primary-dark);
+            color: white;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 20px 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: border 0.2s ease;
+        }
+
+        .question-title {
+            font-weight: 700;
+            font-size: 0.98rem;
+            margin-bottom: 10px;
+            color: var(--text-main);
+            display: flex;
+            gap: 8px;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border-color);
+            background: #FAFAFA;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-subtle);
+        }
+
+        .option-btn.selected {
+            border-color: var(--primary);
+            background: var(--primary-subtle);
+            font-weight: 600;
+        }
+
+        .option-btn.correct-ans {
+            background: #D1FAE5 !important;
+            border-color: var(--correct-color) !important;
+            color: #065F46;
+            font-weight: 700;
+        }
+
+        .option-btn.wrong-ans {
+            background: #FEE2E2 !important;
+            border-color: var(--wrong-color) !important;
+            color: #991B1B;
+        }
+
+        .tf-container {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .tf-btn {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            cursor: pointer;
+            background: #FAFAFA;
+            transition: all 0.2s ease;
+        }
+
+        .tf-btn.selected-true {
+            border-color: var(--primary);
+            background: var(--primary-subtle);
+            color: var(--primary-dark);
+        }
+
+        .tf-btn.selected-false {
+            border-color: var(--gold-dark);
+            background: var(--gold-subtle);
+            color: var(--gold-dark);
+        }
+
+        .matching-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .matching-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .match-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 0.88rem;
+            outline: none;
+            background: white;
+            cursor: pointer;
+        }
+
+        .match-select:focus {
+            border-color: var(--primary);
+        }
+
+        .feedback-box {
+            margin-top: 10px;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .feedback-box.show {
+            display: block;
+        }
+
+        .feedback-box.correct {
+            background: #ECFDF5;
+            border: 1px solid #A7F3D0;
+            color: #065F46;
+        }
+
+        .feedback-box.incorrect {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: #991B1B;
+        }
+
+        .btn-submit-quiz {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            margin-top: 24px;
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-submit-quiz:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-submit-quiz:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .score-modal {
+            display: none;
+            text-align: center;
+            padding: 30px 20px;
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 3px solid var(--gold);
+            box-shadow: var(--shadow-lg);
+            margin-top: 20px;
+        }
+
+        .score-modal.show {
+            display: block;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .badge-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin: 0 auto 16px auto;
+            box-shadow: 0 0 0 8px var(--gold-subtle);
+        }
+
+        .retry-btn {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 10px 24px;
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+        }
+
+        .db-status-badge {
+            margin-top: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            display: inline-block;
+        }
+
+        .db-status-loading {
+            background: #EFF6FF;
+            color: #1D4ED8;
+            border: 1px solid #BFDBFE;
+        }
+
+        .db-status-success {
+            background: #ECFDF5;
+            color: #047857;
+            border: 1px solid #A7F3D0;
+        }
+
+        .db-status-error {
+            background: #FEF2F2;
+            color: #B91C1C;
+            border: 1px solid #FECACA;
+        }
+
+        .material-subheading {
+            font-size: 1.15rem;
+            color: var(--primary-dark);
+            font-weight: 700;
+            margin: 24px 0 12px 0;
+            padding-bottom: 6px;
+            border-bottom: 2px dashed var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-callout {
+            background: #F0FDF4;
+            border-left: 4px solid var(--primary-light);
+            padding: 14px 18px;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            margin: 14px 0;
+            font-size: 0.92rem;
+        }
+
+        .case-study-box {
+            background: var(--gold-subtle);
+            border: 1px solid rgba(217, 119, 6, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            margin-top: auto;
+            font-size: 0.88rem;
+            color: var(--gold-dark);
+        }
+
+        .references-box {
+            background: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            margin-top: 28px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .references-box h4 {
+            color: var(--primary-dark);
+            font-size: 0.98rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .references-box ol {
+            padding-left: 20px;
+            line-height: 1.6;
+        }
+
+        .references-box li {
+            margin-bottom: 6px;
+        }
+
+        .comp-table-container {
+            overflow-x: auto;
+            margin: 16px 0;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+        }
+
+        .comp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
+        .comp-table th {
+            background: var(--primary-dark);
+            color: white;
+            padding: 10px 14px;
+            white-space: nowrap;
+        }
+
+        .comp-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            background: white;
+        }
+
+        .comp-table tr:nth-child(even) td {
+            background: #F8FAFC;
+        }
+
+        .shortcut-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .shortcut-card {
+            background: #F1F5F9;
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .shortcut-key {
+            background: var(--text-main);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        /* Modal Settings URL */
+        .config-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .config-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .config-card {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            border: 2px solid var(--primary);
+        }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.3rem; }
+            .container { padding: 10px; }
+            .nav-tabs { font-size: 0.8rem; }
+            .tab-btn { padding: 8px 4px; min-width: 90px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- COVER PEMBUKA (MODAL OVERLAY) -->
+    <div id="cover-overlay" class="cover-overlay">
+        <div class="cover-card">
+            <span class="cover-badge">✨ Media Pembelajaran Interaktif (MPI)</span>
+            
+            <div class="cover-photo-container">
+                <img src="https://iili.io/n1umnXp.md.jpg" alt="Foto Sandi Kurnianto Koniyo, S.Pd." class="cover-photo" onerror="this.onerror=null; this.src='https://placehold.co/120x120/047857/ffffff?text=Pak+Sandi';">
+            </div>
+
+            <h1 class="cover-title">Analisis Efisiensi Aplikasi Dokumen</h1>
+            <p class="cover-subtitle">Informatika / TIK • Fase D Kelas IX</p>
+
+            <div class="cover-info-grid">
+                <div class="cover-info-item">
+                    <div class="cover-info-icon">👨‍🏫</div>
+                    <div>
+                        <span class="cover-info-label">Guru Pengampu:</span>
+                        <span class="cover-info-val">Sandi Kurnianto Koniyo, S.Pd.</span>
+                    </div>
+                </div>
+                <div class="cover-info-item">
+                    <div class="cover-info-icon">🏫</div>
+                    <div>
+                        <span class="cover-info-label">Satuan Pendidikan:</span>
+                        <span class="cover-info-val">MTs Negeri 2 Kab. Gorontalo</span>
+                    </div>
+                </div>
+                <div class="cover-info-item">
+                    <div class="cover-info-icon">📖</div>
+                    <div>
+                        <span class="cover-info-label">Materi Pokok:</span>
+                        <span class="cover-info-val">Karakteristik & Integrasi Aplikasi</span>
+                    </div>
+                </div>
+                <div class="cover-info-item">
+                    <div class="cover-info-icon">🎯</div>
+                    <div>
+                        <span class="cover-info-label">Kurikulum:</span>
+                        <span class="cover-info-val">Kurikulum Merdeka (Fase D)</span>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn-enter-app" onclick="closeCover()">
+                🚀 Mulai Belajar Interaktif
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL PENGATURAN DATABASE (ADMIN/GURU) -->
+    <div id="config-modal" class="config-modal">
+        <div class="config-card">
+            <h3 style="color: var(--primary-dark); margin-bottom: 10px;">⚙️ Pengaturan Integrasi Apps Script</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">Masukkan <strong>Web App URL</strong> dari Google Apps Script untuk menyimpan nilai secara online ke Google Spreadsheet:</p>
+            
+            <label for="input-app-url" style="display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 4px;">Google Apps Script Web App URL:</label>
+            <input type="text" id="input-app-url" placeholder="https://script.google.com/macros/s/.../exec" style="width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 16px;">
+            
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button type="button" onclick="closeConfigModal()" style="padding: 8px 16px; border: 1px solid var(--border-color); background: #f1f5f9; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600;">Batal</button>
+                <button type="button" onclick="saveConfigUrl()" style="padding: 8px 16px; border: none; background: var(--primary); color: white; border-radius: var(--radius-sm); cursor: pointer; font-weight: 700;">Simpan URL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER UTAMA -->
+    <header class="header">
+        <div class="header-top-nav">
+            <button type="button" class="btn-config-toggle" onclick="openConfigModal()" title="Setel URL Web App Apps Script">⚙️ DB</button>
+            <button type="button" class="btn-cover-toggle" onclick="openCover()">📖 Sampul</button>
+        </div>
+        <span class="header-badge">MPI INFORMATIKA MTs • FASE D</span>
+        <h1>Analisis Efisiensi Aplikasi Dokumen</h1>
+        <p>Teknologi Informasi dan Komunikasi (TIK) Kelas IX</p>
+        
+        <div class="teacher-info">
+            <img src="https://iili.io/n1umnXp.md.jpg" alt="Foto Sandi Kurnianto Koniyo, S.Pd." class="teacher-avatar" onerror="this.onerror=null; this.src='https://placehold.co/46x46/047857/ffffff?text=Pak+Sandi';">
+            <div style="text-align: left;">
+                <span>👨‍🏫 Pengampu: <strong>Sandi Kurnianto Koniyo, S.Pd.</strong></span><br>
+                <span>📍 <strong>MTs Negeri 2 Kabupaten Gorontalo</strong></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- RUNNING TEXT -->
+    <div class="marquee-banner">
+        <div class="marquee-track">
+            <div class="marquee-item">
+                <span class="marquee-badge">INFORMASI</span>
+                <span>Selamat Datang di Media Pembelajaran Interaktif TIK MTs!</span>
+            </div>
+            <div class="marquee-item">
+                <span>👨‍🏫 Guru Pengampu: <strong class="marquee-highlight">Sandi Kurnianto Koniyo, S.Pd.</strong></span>
+            </div>
+            <div class="marquee-item">
+                <span>🏫 Satuan Pendidikan: <strong class="marquee-highlight">MTs Negeri 2 Kabupaten Gorontalo</strong></span>
+            </div>
+            <div class="marquee-item">
+                <span>💡 Topik Pembelajaran: <span style="color:#A7F3D0;">Analisis Karakteristik & Efisiensi Aplikasi Pengolah Kata, Pengolah Angka, Presentasi, dan Desain Grafis</span></span>
+            </div>
+            <div class="marquee-item">
+                <span>🚀 Mari tingkatkan literasi digital dan keterampilan komputasi siswa madrasah!</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('tab-intro')">📌 Capaian</button>
+            <button class="tab-btn" onclick="switchTab('tab-materi')">📚 Materi</button>
+            <button class="tab-btn" onclick="switchTab('tab-simulasi')">🧪 Laboratorium</button>
+            <button class="tab-btn" onclick="switchTab('tab-evaluasi')">📝 Evaluasi (15)</button>
+        </nav>
+
+        <section id="tab-intro" class="tab-content active">
+            <div class="card">
+                <h2 class="card-title">🎯 Capaian & Tujuan Pembelajaran</h2>
+                <p><strong>Capaian Pembelajaran (CP) TIK Fase D:</strong> Pada akhir Fase D, peserta didik mampu memanfaatkan berbagai aplikasi pembuatan dokumen secara efisien untuk menghasilkan karya informatif yang rapi, terstruktur, dan tepat guna.</p>
+                
+                <div style="margin-top: 12px; background: var(--primary-subtle); padding: 14px; border-radius: var(--radius-sm); border-left: 4px solid var(--primary);">
+                    <strong>Tujuan Pembelajaran Spesifik:</strong>
+                    <ul style="padding-left: 20px; margin-top: 6px;">
+                        <li>Peserta didik mampu menganalisis karakteristik terperinci dari Pengolah Kata, Pengolah Angka, Presentasi, dan Desain Grafis.</li>
+                        <li>Peserta didik mampu memilih aplikasi yang <strong>paling efisien</strong> berdasarkan jenis tugas, kebutuhan pengolahan data, dan standar format internasional.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="gorontalo-badge">
+                <span style="font-size: 1.5rem;">🌊🌴</span>
+                <div>
+                    <strong>Konteks Lokal Gorontalo (Pesisir & Agraris):</strong>
+                    <p style="margin-top: 4px;">Di Kabupaten Gorontalo, kita sering menjumpai berbagai jenis dokumen: laporan data tangkapan ikan nelayan Kota Barat, rekapitulasi panen jagung di Limboto, serta poster wisata Danau Limboto & Pantai Saronde. Setiap dokumen membutuhkan jenis aplikasi yang berbeda agar pengerjaannya cepat, akurat, dan profesional!</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-materi" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">📖 Modul Kunci Lengkap: Analisis & Efisiensi Aplikasi Dokumen</h2>
+                
+                <div class="material-subheading">1. Concept Overview: Mengapa Efisiensi Pemilihan Aplikasi Sangat Penting?</div>
+                <p>Dalam dunia Informatika dan Rekayasa Perangkat Lunak, <strong>efisiensi</strong> didefinisikan sebagai rasio antara input (waktu, energi, memori komputasi) dengan produktivitas output. Memilih aplikasi dokumen yang tidak tepat menimbulkan beberapa hambatan serius:</p>
+                
+                <div class="info-callout">
+                    <ul style="padding-left: 20px;">
+                        <li><strong>Pemborosan Waktu & Inefisiensi Proses:</strong> Menghitung total angka 500 baris secara manual di MS Word dapat memakan waktu jam-jam, sedangkan di MS Excel cukup butuh 3 detik dengan rumus <code>=SUM()</code>.</li>
+                        <li><strong>Risiko Kesalahan Data (Human Error):</strong> Perhitungan numerik secara manual sangat rentan terhadap kesalahan manusia. Pengolah Angka memberikan jaminan akurasi kalkulasi hingga 100%.</li>
+                        <li><strong>Ketidakrapian Lay-Out & Standar Dokumen:</strong> Menyusun paragraf makalah di aplikasi presentasi akan menghasilkan tata letak yang berantakan dan sulit dicetak sesuai standar ukuran kertas A4/F4.</li>
+                    </ul>
+                </div>
+
+                <div class="material-subheading">2. Bedah Karakteristik 4 Kelompok Aplikasi Dokumen (Komprehensif)</div>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">Berikut adalah analisis mendalam mengenai karakteristik teknis, struktur data internal, format file standar internasional, keunggulan, serta batasan dari masing-masing kelompok aplikasi:</p>
+
+                <div class="app-grid">
+                    <div class="app-card">
+                        <div class="app-icon bg-word">DOC</div>
+                        <h3>A. Pengolah Kata (Word Processor)</h3>
+                        <p style="font-size: 0.82rem; color: var(--text-muted);">Contoh Software: Microsoft Word, Google Docs, LibreOffice Writer, WPS Writer, Apple Pages.</p>
+                        
+                        <div class="app-card-tech">
+                            <strong>💾 Format File Standar:</strong><br>
+                            <code>.docx</code> (ISO/IEC 29500 OOXML), <code>.odt</code> (ISO/IEC 26300 OpenDocument), <code>.rtf</code>, <code>.pdf</code>, <code>.txt</code>
+                        </div>
+
+                        <ul>
+                            <li><strong>Model & Model Data:</strong> Mengolah aliran teks kontinu (<em>text flow paradigm</em>) yang terbagi dalam halaman, paragraf, serta seksi (<em>section breaks</em>).</li>
+                            <li><strong>Fitur Teknis Utama:</strong>
+                                <ul>
+                                    <li><em>Page Setup:</em> Kontrol margin, orientasi (portrait/landscape), dan ukuran kertas HVS/A4/F4.</li>
+                                    <li><em>Styling & Automation:</em> Heading styles (H1, H2) untuk pembuatan <strong>Table of Contents (Daftar Isi) Otomatis</strong>.</li>
+                                    <li><em>Document Citations & Referencing:</em> Catatan kaki (Footnote/Endnote), Daftar Pustaka otomatis, Cross-reference.</li>
+                                    <li><em>Mail Merge:</em> Penggabungan template surat naskah tunggal dengan database penerima massal.</li>
+                                    <li><em>Review & Collaboration:</em> Track Changes, komentar interaktif, dan penomoran halaman dinamis (Header & Footer).</li>
+                                </ul>
+                            </li>
+                            <li><strong>Batasan Utama:</strong> Tidak efisien untuk kalkulasi matematika kompleks antar-sel atau pembuatan desain grafis bebas berpiksel tinggi.</li>
+                        </ul>
+
+                        <div class="case-study-box">
+                            <strong>📌 Contoh Kasus Gorontalo:</strong> Menyusun Proposal Laporan Makalah Kelompok tentang Kelestarian Eceng Gondok di Danau Limboto atau Surat Undangan Resmi Majelis Guru MTsN 2 Kabupaten Gorontalo.
+                        </div>
+                    </div>
+
+                    <div class="app-card">
+                        <div class="app-icon bg-excel">XLS</div>
+                        <h3>B. Pengolah Angka (Spreadsheet)</h3>
+                        <p style="font-size: 0.82rem; color: var(--text-muted);">Contoh Software: Microsoft Excel, Google Sheets, LibreOffice Calc, WPS Spreadsheet, Apple Numbers.</p>
+                        
+                        <div class="app-card-tech">
+                            <strong>💾 Format File Standar:</strong><br>
+                            <code>.xlsx</code> (ISO/IEC 29500), <code>.ods</code> (ISO/IEC 26300), <code>.csv</code> (RFC 4180 Comma-Separated Values), <code>.tsv</code>
+                        </div>
+
+                        <ul>
+                            <li><strong>Model & Model Data:</strong> Kisi sel dua/tiga dimensi (<em>grid system</em> baris & kolom) yang terhubung dalam mesin pemrosesan data reaktif (<em>reactive dataflow engine</em>).</li>
+                            <li><strong>Fitur Teknis Utama:</strong>
+                                <ul>
+                                    <li><em>Formula & Fungsi Matematis:</em> <code>SUM</code>, <code>AVERAGE</code>, <code>COUNTIF</code>, <code>VLOOKUP</code>/<code>XLOOKUP</code>, <code>IF</code> bersyarat.</li>
+                                    <li><em>Referensi Sel:</em> Referensi Relatif (<code>A1</code>), Absolut (<code>$A$1</code>), dan Campuran (<code>$A1</code>) untuk reusabilitas rumus.</li>
+                                    <li><em>Data Analytics:</em> Filter data, sorting multi-kriteria, Data Validation (pembatasan input), dan Pivot Table.</li>
+                                    <li><em>Visualisasi Data:</em> Pembuatan Grafik Batang (Bar Chart), Diagram Lingkaran (Pie Chart), dan Sparklines otomatis.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Batasan Utama:</strong> Sangat tidak nyaman digunakan untuk penulisan paragraf cerita/naskah panjang karena terbelenggu dalam struktur sel terikat.</li>
+                        </ul>
+
+                        <div class="case-study-box">
+                            <strong>📌 Contoh Kasus Gorontalo:</strong> Merekapitulasi Timbangan Hasil Panen Jagung Petani Kwandang/Limboto atau Menghitung Hasil Tangkapan Ikan Tuna Nelayan Pesisir Gorontalo.
+                        </div>
+                    </div>
+
+                    <div class="app-card">
+                        <div class="app-icon bg-ppt">PPT</div>
+                        <h3>C. Aplikasi Presentasi (Presentation)</h3>
+                        <p style="font-size: 0.82rem; color: var(--text-muted);">Contoh Software: Microsoft PowerPoint, Google Slides, LibreOffice Impress, Canva Slides, Apple Keynote.</p>
+                        
+                        <div class="app-card-tech">
+                            <strong>💾 Format File Standar:</strong><br>
+                            <code>.pptx</code> (ISO/IEC 29500), <code>.odp</code> (ISO/IEC 26300), <code>.pdf</code>, <code>.mp4</code> (video slide export)
+                        </div>
+
+                        <ul>
+                            <li><strong>Model & Model Data:</strong> Lembar kerja berupa kanvas kartu spasial (<em>slideshow canvas</em>) berdimesi rasio layar (16:9 atau 4:3) yang berjalan berurutan secara urut waktu (<em>timeline sequence</em>).</li>
+                            <li><strong>Fitur Teknis Utama:</strong>
+                                <ul>
+                                    <li><em>Slide Master:</em> Pengaturan tata letak (layout), tema warna, dan font konsisten untuk seluruh lembar slide.</li>
+                                    <li><em>Visual Hierarchy:</em> Poin-poin ringkas (bullet points), diagram SmartArt, dan tata letak informasi bertingkat.</li>
+                                    <li><em>Dynamic Effects:</em> Custom Animation (Entrance, Emphasis, Exit), Slide Transition, dan Morph Effect.</li>
+                                    <li><em>Presenter Tools:</em> Speaker Notes (catatan pembicara), Dual Monitor Presenter View, dan Rehearse Timings.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Batasan Utama:</strong> Tidak dirancang untuk pencetakan dokumen formal bernarasi padat karena ruang teks per slide terbatas demi kenyamanan audiens.</li>
+                        </ul>
+
+                        <div class="case-study-box">
+                            <strong>📌 Contoh Kasus Gorontalo:</strong> Mempresentasikan Program Kerja Pengurus OSIM MTsN 2 Kab. Gorontalo di depan Kepala Madrasah dan Rekan Siswa.
+                        </div>
+                    </div>
+
+                    <div class="app-card">
+                        <div class="app-icon bg-graphic">IMG</div>
+                        <h3>D. Aplikasi Desain Grafis & Media Visual</h3>
+                        <p style="font-size: 0.82rem; color: var(--text-muted);">Contoh Software: Canva Graphic Design, CorelDraw, Inkscape, Adobe Illustrator, Adobe Photoshop, Figma.</p>
+                        
+                        <div class="app-card-tech">
+                            <strong>💾 Format File Standar:</strong><br>
+                            <code>.png</code>, <code>.jpg</code>/<code>.jpeg</code>, <code>.svg</code> (W3C Standard Vector), <code>.pdf</code> (PDF/X Print Standard), <code>.psd</code>/<code>.ai</code>
+                        </div>
+
+                        <ul>
+                            <li><strong>Model & Model Data:</strong> Kanvas bebas berbasis Vektor (persamaan matematika titik Bézier) atau Raster/Bitmap (matriks piksel warna).</li>
+                            <li><strong>Fitur Teknis Utama:</strong>
+                                <ul>
+                                    <li><em>Multi-layer Management:</em> Pengaturan objek bertumpuk (layering), grouping, locking, dan masking objek.</li>
+                                    <li><em>Advanced Typography:</em> Pengaturan font artistik, kerning, tracking, leading, dan efek teks melengkung.</li>
+                                    <li><em>Vector & Graphics Tools:</em> Pen tool, shape builder, background remover, dan kalibrasi warna (CMYK untuk cetak vs RGB untuk layar).</li>
+                                    <li><em>High-Resolution Export:</em> Penyesuaian DPI/PPI untuk kualitas cetak spanduk/poster resolusi tinggi tanpa pecah.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Batasan Utama:</strong> Sangat tidak efisien untuk mengolah naskah bermultipdf/berlembar-lembar paragraf serta tidak dapat melakukan kalkulasi matematika otomatis.</li>
+                        </ul>
+
+                        <div class="case-study-box">
+                            <strong>📌 Contoh Kasus Gorontalo:</strong> Merancang Poster Digital Promosi Pariwisata Pesona Pantai Saronde Gorontalo Utara atau Spanduk Peringatan Hari Santri.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="material-subheading">3. Matriks Komparasi Cepat Pemilihan Aplikasi</div>
+                <p>Gunakan tabel panduan di bawah ini untuk menentukan pilihan aplikasi secara sekejap saat menerima tugas dari guru:</p>
+
+                <div class="comp-table-container">
+                    <table class="comp-table">
+                        <thead>
+                            <tr>
+                                <th>Kriteria Tugas</th>
+                                <th>Pengolah Kata</th>
+                                <th>Pengolah Angka</th>
+                                <th>Presentasi</th>
+                                <th>Desain Grafis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Bentuk Utama Output</strong></td>
+                                <td>Dokumen Cetak / Makalah</td>
+                                <td>Tabel & Laporan Angka</td>
+                                <td>Slide Tayangan Layar</td>
+                                <td>Poster / Flyer / Spanduk</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dominasi Jenis Data</strong></td>
+                                <td>Teks & Paragraf Narasi</td>
+                                <td>Angka, Formula, Sel</td>
+                                <td>Poin Ringkas & Gambar</td>
+                                <td>Ilustrasi, Foto & Text Art</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kekuatan Otomatisasi</strong></td>
+                                <td>Daftar Isi & Mail Merge</td>
+                                <td>Kalkulasi Rumus & Statistik</td>
+                                <td>Animasi & Transisi Slide</td>
+                                <td>Tata Letak Layer Visual</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kecepatan Edit Tabel Angka</strong></td>
+                                <td>Lambat (Manual)</td>
+                                <td><strong>Sangat Cepat (Otomatis)</strong></td>
+                                <td>Sedang (Tabel dasar)</td>
+                                <td>Kurang Cocok</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="material-subheading">4. Konsep Integrasi Antar-Aplikasi: Object Linking and Embedding (OLE)</div>
+                <p>Di dunia kerja dan akademik modern, aplikasi tidak berdiri sendiri! Kita dapat menghubungkan atau menggabungkan isi dokumen dari satu aplikasi ke aplikasi lainnya secara efisien.</p>
+
+                <div class="info-callout" style="background: var(--gold-subtle); border-left-color: var(--gold);">
+                    <strong>💡 Contoh Integrasi Cerdas (OLE):</strong><br>
+                    Ketika kamu menghitung data statistik panen di <strong>Pengolah Angka (Excel)</strong> dan membuat grafiknya, grafik tersebut dapat langsung di-copy dan di-paste secara <em>Live Link</em> ke dalam Laporan Makalah di <strong>Pengolah Kata (Word)</strong> atau Slide <strong>Presentasi (PowerPoint)</strong>. Jika angka di Excel diubah, secara otomatis grafik di Word dan PowerPoint ikut terbarui tanpa perlu diedit ulang!
+                </div>
+
+                <div class="material-subheading">5. Shortcut Keyboard Utama Produk TIK (Tips Efisiensi Cepat Siswa MTs)</div>
+                <p>Menguasai tombol pintas (shortcut) akan melipatgandakan kecepatan kerja siswa dalam mengoperasikan aplikasi dokumen:</p>
+
+                <div class="shortcut-grid">
+                    <div class="shortcut-card">
+                        <span>Menyalin Teks/Data:</span>
+                        <span class="shortcut-key">Ctrl + C</span>
+                    </div>
+                    <div class="shortcut-card">
+                        <span>Menempel Teks/Data:</span>
+                        <span class="shortcut-key">Ctrl + V</span>
+                    </div>
+                    <div class="shortcut-card">
+                        <span>Menyimpan Dokumen:</span>
+                        <span class="shortcut-key">Ctrl + S</span>
+                    </div>
+                    <div class="shortcut-card">
+                        <span>Membatalkan Perubahan:</span>
+                        <span class="shortcut-key">Ctrl + Z</span>
+                    </div>
+                    <div class="shortcut-card">
+                        <span>Mencetak Dokumen:</span>
+                        <span class="shortcut-key">Ctrl + P</span>
+                    </div>
+                    <div class="shortcut-card">
+                        <span>Membuat Teks Tebal:</span>
+                        <span class="shortcut-key">Ctrl + B</span>
+                    </div>
+                </div>
+
+                <div class="references-box">
+                    <h4>📚 Daftar Sumber Referensi & Rujukan Materi TIK:</h4>
+                    <ol>
+                        <li><strong>Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi RI (2022).</strong> <em>Buku Panduan Guru & Buku Siswa Informatika Kelas IX Kurikulum Merdeka</em>. Pusat Kurikulum dan Perbukuan, Jakarta.</li>
+                        <li><strong>ISO/IEC 29500:2012.</strong> <em>Information technology — Document Open XML formats (OOXML)</em>. International Organization for Standardization (ISO) / International Electrotechnical Commission (IEC).</li>
+                        <li><strong>ISO/IEC 26300:2015.</strong> <em>Information technology — Open Document Format for Office Applications (OpenDocument / ODF) v1.2</em>. ISO/IEC Standards Organization.</li>
+                        <li><strong>IETF RFC 4180 (2005).</strong> <em>Common Format and MIME Type for Comma-Separated Values (CSV) Files</em>. Internet Engineering Task Force.</li>
+                        <li><strong>Microsoft Learn & Technical Documentation (2024).</strong> <em>Object Linking and Embedding (OLE) Architecture and Application Integration Guidelines</em>. Microsoft Docs.</li>
+                        <li><strong>W3C Recommendation (2018).</strong> <em>Scalable Vector Graphics (SVG) 1.1 (Second Edition) Specifications</em>. World Wide Web Consortium.</li>
+                    </ol>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="tab-simulasi" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">🧪 Laboratorium Analisis Efisiensi Dokumen</h2>
+                <p>Uji penalaranmu! Geser parameter di bawah sesuai kebutuhan tugas kelompokmu di MTs, lalu lihat aplikasi mana yang paling efisien dipilih berdasarkan algoritma analisis TIK!</p>
+
+                <div class="simulator-box">
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span>🔢 Perhitungan Angka & Rumus Kompleks:</span>
+                            <span id="val-angka" style="color: var(--primary-dark);">Rendah</span>
+                        </div>
+                        <input type="range" id="slide-angka" min="0" max="10" value="1" oninput="updateSimulation()">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span>📝 Teks Paragraf & Struktur Surat Resmi:</span>
+                            <span id="val-teks" style="color: var(--primary-dark);">Sangat Tinggi</span>
+                        </div>
+                        <input type="range" id="slide-teks" min="0" max="10" value="9" oninput="updateSimulation()">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span>🖼️ Kebutuhan Visual, Slide & Estetika Grafis:</span>
+                            <span id="val-visual" style="color: var(--primary-dark);">Rendah</span>
+                        </div>
+                        <input type="range" id="slide-visual" min="0" max="10" value="2" oninput="updateSimulation()">
+                    </div>
+
+                    <div class="analysis-result">
+                        <h4 style="color: var(--primary-dark); margin-bottom: 12px; font-size: 1rem;">📊 Skor Efisiensi Aplikasi:</h4>
+                        
+                        <div class="app-meter">
+                            <span class="meter-label">Pengolah Kata</span>
+                            <div class="meter-bar-bg"><div id="bar-word" class="meter-bar-fill" style="width: 80%;"></div></div>
+                            <span id="score-word" class="meter-score">80%</span>
+                        </div>
+
+                        <div class="app-meter">
+                            <span class="meter-label">Pengolah Angka</span>
+                            <div class="meter-bar-bg"><div id="bar-excel" class="meter-bar-fill" style="width: 20%;"></div></div>
+                            <span id="score-excel" class="meter-score">20%</span>
+                        </div>
+
+                        <div class="app-meter">
+                            <span class="meter-label">Presentasi / Grafis</span>
+                            <div class="meter-bar-bg"><div id="bar-ppt" class="meter-bar-fill" style="width: 30%;"></div></div>
+                            <span id="score-ppt" class="meter-score">30%</span>
+                        </div>
+
+                        <div id="sim-recommendation" style="margin-top: 14px; padding: 10px; background: var(--gold-subtle); border-radius: var(--radius-sm); font-size: 0.88rem; color: var(--gold-dark); font-weight: 600;">
+                            💡 Rekomendasi Pak Sandi: Pilih <strong>Pengolah Kata</strong> karena tugas didominasi naskah tulisan dan paragraf rapi.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-evaluasi" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">📝 Evaluasi Mandiri Interaktif</h2>
+                <p style="margin-bottom: 16px;">Kerjakan 15 soal di bawah ini (5 Pilihan Ganda, 5 Benar/Salah, dan 5 Menjodohkan) untuk mengukur pemahamanmu. Jawaban dan pembahasan langsung ditampilkan setelah tombol disubmit!</p>
+
+                <!-- CARD IDENTITAS SISWA -->
+                <div class="card" style="border-left: 5px solid var(--gold); background: #FFFDF5; margin-bottom: 20px;">
+                    <h3 style="font-size: 1.1rem; color: var(--gold-dark); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                        👤 Identitas Siswa
+                    </h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Silakan isi nama dan kelasmu secara mandiri sebelum mengerjakan dan mengirim evaluasi:</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <div>
+                            <label for="input-nama" style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; color: var(--text-main);">Nama Lengkap Siswa: <span style="color:red">*</span></label>
+                            <input type="text" id="input-nama" placeholder="Contoh: Ahmad Rizky" required style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.9rem; outline: none; background: white;">
+                        </div>
+                        <div>
+                            <label for="input-kelas" style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 4px; color: var(--text-main);">Kelas / Rombel: <span style="color:red">*</span></label>
+                            <input type="text" id="input-kelas" placeholder="Contoh: IX A / IX Unggulan" required style="width: 100%; padding: 10px 12px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.9rem; outline: none; background: white;">
+                        </div>
+                    </div>
+                </div>
+
+                <form id="quiz-form" onsubmit="evaluateQuiz(event)">
+                    
+                    <div class="quiz-section-header">
+                        <span>📌 Bagian A: Pilihan Ganda (1 - 5)</span>
+                    </div>
+
+                    <div class="question-card" id="q-card-1">
+                        <div class="question-title">
+                            <span>1.</span>
+                            <span>Kelompok tani di Kabupaten Gorontalo ingin merekapitulasi data hasil panen jagung selama 1 tahun, lengkap dengan perhitungan rata-rata panen dan grafik bulanan. Aplikasi manakah yang paling efisien digunakan?</span>
+                        </div>
+                        <div class="options-list">
+                            <button type="button" class="option-btn" onclick="selectOption(1, 'A', this)">A. Microsoft Word / Google Docs</button>
+                            <button type="button" class="option-btn" onclick="selectOption(1, 'B', this)">B. Microsoft Excel / Google Sheets</button>
+                            <button type="button" class="option-btn" onclick="selectOption(1, 'C', this)">C. Microsoft PowerPoint / Google Slides</button>
+                            <button type="button" class="option-btn" onclick="selectOption(1, 'D', this)">D. Adobe Photoshop / Canva</button>
+                        </div>
+                        <div id="feedback-1" class="feedback-box"></div>
+                    </div>
+
+                    <div class="question-card" id="q-card-2">
+                        <div class="question-title">
+                            <span>2.</span>
+                            <span>Sandi ingin menyampaikan gagasan tentang upaya pelestarian Danau Limboto di hadapan teman-teman kelasnya di MTs. Dokumen yang dibutuhkannya berupa poin-poin ringkas yang dilengkapi dengan gambar interaktif. Aplikasi paling tepat adalah...</span>
+                        </div>
+                        <div class="options-list">
+                            <button type="button" class="option-btn" onclick="selectOption(2, 'A', this)">A. Pengolah Angka (Spreadsheet)</button>
+                            <button type="button" class="option-btn" onclick="selectOption(2, 'B', this)">B. Pengolah Kata (Word Processor)</button>
+                            <button type="button" class="option-btn" onclick="selectOption(2, 'C', this)">C. Aplikasi Presentasi (Presentation)</button>
+                            <button type="button" class="option-btn" onclick="selectOption(2, 'D', this)">D. Aplikasi Manajemen Database</button>
+                        </div>
+                        <div id="feedback-2" class="feedback-box"></div>
+                    </div>
+
+                    <div class="question-card" id="q-card-3">
+                        <div class="question-title">
+                            <span>3.</span>
+                            <span>Pengurus OSIM MTsN 2 Kabupaten Gorontalo ditugaskan menyusun Surat Undangan Rapat Kegiatan Peringatan Hari Santri. Alasan utama memilih Pengolah Kata dibanding Pengolah Angka untuk tugas ini adalah...</span>
+                        </div>
+                        <div class="options-list">
+                            <button type="button" class="option-btn" onclick="selectOption(3, 'A', this)">A. Pengolah Kata memiliki rumus perhitungan matematik yang lebih advance</button>
+                            <button type="button" class="option-btn" onclick="selectOption(3, 'B', this)">B. Pengolah Kata mempermudah pengaturan tata letak paragraf, margin, dan KOP surat</button>
+                            <button type="button" class="option-btn" onclick="selectOption(3, 'C', this)">C. Pengolah Angka tidak bisa dicetak di kertas HVS</button>
+                            <button type="button" class="option-btn" onclick="selectOption(3, 'D', this)">D. Pengolah Kata secara otomatis membuat slide presentasi</button>
+                        </div>
+                        <div id="feedback-3" class="feedback-box"></div>
+                    </div>
+
+                    <div class="question-card" id="q-card-4">
+                        <div class="question-title">
+                            <span>4.</span>
+                            <span>Seorang nelayan di pesisir Kwandang ingin menghitung selisih keuntungan penjualan ikan tuna dan cakalang. Mengapa pembuatan tabel perhitungan di Microsoft Excel jauh lebih efisien dibandingkan membuat tabel manual di Word?</span>
+                        </div>
+                        <div class="options-list">
+                            <button type="button" class="option-btn" onclick="selectOption(4, 'A', this)">A. Karena Excel secara otomatis menghitung selisih menggunakan rumus tanpa kalkulator manual</button>
+                            <button type="button" class="option-btn" onclick="selectOption(4, 'B', this)">B. Karena Word tidak bisa diisi angka sama sekali</button>
+                            <button type="button" class="option-btn" onclick="selectOption(4, 'C', this)">C. Karena Excel memiliki pilihan font warna-warni yang lebih banyak</button>
+                            <button type="button" class="option-btn" onclick="selectOption(4, 'D', this)">D. Karena Word hanya bekerja jika ada koneksi internet</button>
+                        </div>
+                        <div id="feedback-4" class="feedback-box"></div>
+                    </div>
+
+                    <div class="question-card" id="q-card-5">
+                        <div class="question-title">
+                            <span>5.</span>
+                            <span>Tindakan mengintegrasikan tabel grafik angka dari Pengolah Angka ke dalam lembar laporan Pengolah Kata dinamakan teknik...</span>
+                        </div>
+                        <div class="options-list">
+                            <button type="button" class="option-btn" onclick="selectOption(5, 'A', this)">A. Format Formatting</button>
+                            <button type="button" class="option-btn" onclick="selectOption(5, 'B', this)">B. Object Linking and Embedding (OLE) / Integrasi Konten</button>
+                            <button type="button" class="option-btn" onclick="selectOption(5, 'C', this)">C. Mail Merge khusus slide</button>
+                            <button type="button" class="option-btn" onclick="selectOption(5, 'D', this)">D. Rendering Visual 3D</button>
+                        </div>
+                        <div id="feedback-5" class="feedback-box"></div>
+                    </div>
+
+                    <div class="quiz-section-header">
+                        <span>📌 Bagian B: Benar / Salah (6 - 10)</span>
+                    </div>
+
+                    <div class="question-card" id="q-card-6">
+                        <div class="question-title">
+                            <span>6.</span>
+                            <span>"Aplikasi Pengolah Kata adalah pilihan paling efisien untuk memproses rekapitulasi data statistik 10.000 baris dengan rumus perkalian otomatis."</span>
+                        </div>
+                        <div class="tf-container">
+                            <button type="button" class="tf-btn" onclick="selectTF(6, true, this)">BENAR</button>
+                            <button type="button" class="tf-btn" onclick="selectTF(6, false, this)">SALAH</button>
+                        </div>
+                        <div id="feedback-6" class="feedback-box"></div>
+                    </div>
+
+                    <div class="question-card" id="q-card-7">
+                        <div class="question-title">
+                            <span>7.</span>
+                            <span>"Slide presentasi yang efisien sebaiknya memuat seluruh isi paragraf panjang dari buku paket secara utuh tanpa diringkas."</span>
+                        </div>
+                        <div class="tf-container">
+                            <button type="button" class="tf-btn" onclick="selectTF(7, true, this)">BENAR</button>
+                            <button type="button" class="tf-btn" onclick="selectTF(7, false, this)">SALAH</button>
+                        </div>
+                        <div id="feedback-7" class="feedback-box"></div>
+                    </div>
+
+                    <div class="question-card" id="q-card-8">
+                        <div class="question-title">
+                            <span>8.</span>
+                            <span>"Fitur utama dalam Pengolah Angka yang membuatnya sangat efisien adalah adanya Formula dan Fungsi matematis seperti SUM, AVERAGE, dan IF."</span>
+                        </div>
+                        <div class="tf-container">
+                            <button type="button" class="tf-btn" onclick="selectTF(8, true, this)">BENAR</button>
+                            <button type="button" class="tf-btn" onclick="selectTF(8, false, this)">SALAH</button>
+                        </div>
+                        <div id="feedback-8" class="feedback-box"></div>
+                    </div>
+
+                    <div class="question-card" id="q-card-9">
+                        <div class="question-title">
+                            <span>9.</span>
+                            <span>"Memilih aplikasi yang tidak sesuai dengan jenis pekerjaan dokumen dapat membuang waktu dan memicu kesalahan pengolahan data."</span>
+                        </div>
+                        <div class="tf-container">
+                            <button type="button" class="tf-btn" onclick="selectTF(9, true, this)">BENAR</button>
+                            <button type="button" class="tf-btn" onclick="selectTF(9, false, this)">SALAH</button>
+                        </div>
+                        <div id="feedback-9" class="feedback-box"></div>
+                    </div>
+
+                    <div class="question-card" id="q-card-10">
+                        <div class="question-title">
+                            <span>10.</span>
+                            <span>"Aplikasi Canva atau CorelDraw lebih efisien digunakan untuk mendesain Poster Pameran Hasil Tani Gorontalo dibandingkan menggunakan Microsoft Word."</span>
+                        </div>
+                        <div class="tf-container">
+                            <button type="button" class="tf-btn" onclick="selectTF(10, true, this)">BENAR</button>
+                            <button type="button" class="tf-btn" onclick="selectTF(10, false, this)">SALAH</button>
+                        </div>
+                        <div id="feedback-10" class="feedback-box"></div>
+                    </div>
+
+                    <div class="quiz-section-header">
+                        <span>📌 Bagian C: Menjodohkan Tugas & Aplikasi Tepat (11 - 15)</span>
+                    </div>
+
+                    <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 12px;">Jodohkan jenis dokumen di sebelah kiri dengan jenis aplikasi yang paling efisien di sebelah kanan:</p>
+
+                    <div class="question-card">
+                        <div class="matching-grid">
+                            <div>
+                                <strong>11. Laporan Makalah Kelompok MTs</strong>
+                                <p style="font-size: 0.8rem; color: var(--text-muted);">Naskah narasi & daftar isi rapi</p>
+                            </div>
+                            <div>
+                                <select class="match-select" id="match-11">
+                                    <option value="">-- Pilih Aplikasi --</option>
+                                    <option value="WORD">Pengolah Kata (Word Processor)</option>
+                                    <option value="EXCEL">Pengolah Angka (Spreadsheet)</option>
+                                    <option value="PPT">Aplikasi Presentasi</option>
+                                    <option value="GRAPHIC">Aplikasi Desain Grafis</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="feedback-11" class="feedback-box"></div>
+                    </div>
+
+                    <div class="question-card">
+                        <div class="matching-grid">
+                            <div>
+                                <strong>12. Perhitungan Keuangan Koperasi Nelayan</strong>
+                                <p style="font-size: 0.8rem; color: var(--text-muted);">Tabel anggaran & rumus SUM/AVERAGE</p>
+                            </div>
+                            <div>
+                                <select class="match-select" id="match-12">
+                                    <option value="">-- Pilih Aplikasi --</option>
+                                    <option value="WORD">Pengolah Kata (Word Processor)</option>
+                                    <option value="EXCEL">Pengolah Angka (Spreadsheet)</option>
+                                    <option value="PPT">Aplikasi Presentasi</option>
+                                    <option value="GRAPHIC">Aplikasi Desain Grafis</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="feedback-12" class="feedback-box"></div>
+                    </div>
+
+                    <div class="question-card">
+                        <div class="matching-grid">
+                            <div>
+                                <strong>13. Paparan Diskusi Kelas / Rapat OSIM</strong>
+                                <p style="font-size: 0.8rem; color: var(--text-muted);">Slide poin visual & animasi audiens</p>
+                            </div>
+                            <div>
+                                <select class="match-select" id="match-13">
+                                    <option value="">-- Pilih Aplikasi --</option>
+                                    <option value="WORD">Pengolah Kata (Word Processor)</option>
+                                    <option value="EXCEL">Pengolah Angka (Spreadsheet)</option>
+                                    <option value="PPT">Aplikasi Presentasi</option>
+                                    <option value="GRAPHIC">Aplikasi Desain Grafis</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="feedback-13" class="feedback-box"></div>
+                    </div>
+
+                    <div class="question-card">
+                        <div class="matching-grid">
+                            <div>
+                                <strong>14. Poster Promosi Pesona Wisata Saronde</strong>
+                                <p style="font-size: 0.8rem; color: var(--text-muted);">Layout artistik, gambar & font cetak</p>
+                            </div>
+                            <div>
+                                <select class="match-select" id="match-14">
+                                    <option value="">-- Pilih Aplikasi --</option>
+                                    <option value="WORD">Pengolah Kata (Word Processor)</option>
+                                    <option value="EXCEL">Pengolah Angka (Spreadsheet)</option>
+                                    <option value="PPT">Aplikasi Presentasi</option>
+                                    <option value="GRAPHIC">Aplikasi Desain Grafis</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="feedback-14" class="feedback-box"></div>
+                    </div>
+
+                    <div class="question-card">
+                        <div class="matching-grid">
+                            <div>
+                                <strong>15. Pengolahan Data Nilai Rapor Siswa Kelas IX</strong>
+                                <p style="font-size: 0.8rem; color: var(--text-muted);">Analisis ketuntasan & peringkat angka</p>
+                            </div>
+                            <div>
+                                <select class="match-select" id="match-15">
+                                    <option value="">-- Pilih Aplikasi --</option>
+                                    <option value="WORD">Pengolah Kata (Word Processor)</option>
+                                    <option value="EXCEL">Pengolah Angka (Spreadsheet)</option>
+                                    <option value="PPT">Aplikasi Presentasi</option>
+                                    <option value="GRAPHIC">Aplikasi Desain Grafis</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="feedback-15" class="feedback-box"></div>
+                    </div>
+
+                    <button type="submit" id="btn-submit" class="btn-submit-quiz">🚀 PERIKSA JAWABAN & KIRIM NILAI KE SPREADSHEET</button>
+                </form>
+
+                <div id="score-modal" class="score-modal">
+                    <div id="score-badge" class="badge-circle">0</div>
+                    <h3 id="score-title" style="color: var(--primary-dark); font-size: 1.4rem; margin-bottom: 4px;">Hasil Evaluasi</h3>
+                    <div id="score-student-info" style="font-weight: 700; color: var(--gold-dark); font-size: 0.95rem; margin-bottom: 12px; background: var(--gold-subtle); display: inline-block; padding: 6px 18px; border-radius: 20px; border: 1px solid rgba(217,119,6,0.3);">
+                        👤 Nama Siswa: - | 🏫 Kelas: -
+                    </div>
+                    <p id="score-desc" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 12px;">Ulasan ketepatan analisis kamu telah diproses di bawah ini.</p>
+                    
+                    <!-- Indikator Pengiriman Database -->
+                    <div id="db-status" class="db-status-badge db-status-loading">
+                        ⏳ Mengirim data nilai ke Google Spreadsheet...
+                    </div>
+                    <br>
+                    <button class="retry-btn" onclick="resetQuiz()">🔄 Coba Lagi Evaluasi</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // CONFIGURASI GOOGLE APPS SCRIPT WEB APP URL
+        // Ganti URL ini dengan URL Web App dari Deploy Apps Script Anda!
+        let GAS_WEB_APP_URL = localStorage.getItem("MPI_GAS_URL") || "PASTE_URL_WEB_APP_APPS_SCRIPT_DISINI";
+
+        const userAnswers = {
+            mc: {},
+            tf: {},
+            matching: {}
+        };
+
+        const answerKey = {
+            1: { correct: 'B', exp: "Sangat Tepat! Pengolah Angka (Excel/Sheets) khusus dirancang untuk mengolah data tabel, kalkulasi otomatis, dan pembuatan grafik data." },
+            2: { correct: 'C', exp: "Sangat Tepat! Aplikasi Presentasi dirancang untuk memuat poin-poin ringkas visual untuk audiens." },
+            3: { correct: 'B', exp: "Sangat Tepat! Pengolah Kata memiliki tata letak halaman yang fleksibel untuk dokumen berformat paragraf seperti surat." },
+            4: { correct: 'A', exp: "Sangat Tepat! Keunggulan utama Pengolah Angka adalah rumus perhitungan otomatis tanpa perlu dihitung manual." },
+            5: { correct: 'B', exp: "Sangat Tepat! OLE (Object Linking & Embedding) mempermudah integrasi objek tabel/grafik antar aplikasi secara dinamis." },
+            
+            6: { correct: false, exp: "Benar! Pernyataan ini SALAH karena rekap data ribuan baris dengan rumus matematika mestinya menggunakan Pengolah Angka." },
+            7: { correct: false, exp: "Benar! Pernyataan ini SALAH. Slide presentasi harusnya berisi poin-poin singkat yang jelas, bukan teks paragraf utuh." },
+            8: { correct: true, exp: "Sangat Tepat! Pernyataan ini BENAR. Formula seperti SUM dan AVERAGE adalah kekuatan utama pengolah angka." },
+            9: { correct: true, exp: "Sangat Tepat! Pernyataan ini BENAR. Ketidaksesuaian aplikasi akan menghambat efisiensi kerja." },
+            10: { correct: true, exp: "Sangat Tepat! Pernyataan ini BENAR. Aplikasi desain grafis memiliki kebebasan manipulasi gambar yang lebih luas untuk poster." },
+
+            11: { correct: 'WORD', exp: "Tepat! Laporan narasi menggunakan Pengolah Kata." },
+            12: { correct: 'EXCEL', exp: "Tepat! Perhitungan keuangan dan tabel anggaran menggunakan Pengolah Angka." },
+            13: { correct: 'PPT', exp: "Tepat! Paparan diskusi membutuhkan Slide Presentasi." },
+            14: { correct: 'GRAPHIC', exp: "Tepat! Poster artistik membutuhkan Aplikasi Desain Grafis." },
+            15: { correct: 'EXCEL', exp: "Tepat! Pengolahan nilai rapor dan peringkat angka paling cepat di Pengolah Angka." }
+        };
+
+        function closeCover() {
+            document.getElementById('cover-overlay').classList.add('hidden');
+        }
+
+        function openCover() {
+            document.getElementById('cover-overlay').classList.remove('hidden');
+        }
+
+        function openConfigModal() {
+            document.getElementById('input-app-url').value = GAS_WEB_APP_URL.includes("PASTE_URL") ? "" : GAS_WEB_APP_URL;
+            document.getElementById('config-modal').classList.add('active');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('config-modal').classList.remove('active');
+        }
+
+        function saveConfigUrl() {
+            const val = document.getElementById('input-app-url').value.trim();
+            if(val) {
+                GAS_WEB_APP_URL = val;
+                localStorage.setItem("MPI_GAS_URL", val);
+                alert("✅ URL Web App Google Apps Script berhasil disimpan!");
+            } else {
+                localStorage.removeItem("MPI_GAS_URL");
+                GAS_WEB_APP_URL = "PASTE_URL_WEB_APP_APPS_SCRIPT_DISINI";
+                alert("⚠️ URL direset ke standar.");
+            }
+            closeConfigModal();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function updateSimulation() {
+            const vAngka = parseInt(document.getElementById('slide-angka').value);
+            const vTeks = parseInt(document.getElementById('slide-teks').value);
+            const vVisual = parseInt(document.getElementById('slide-visual').value);
+
+            document.getElementById('val-angka').innerText = getTextLabel(vAngka);
+            document.getElementById('val-teks').innerText = getTextLabel(vTeks);
+            document.getElementById('val-visual').innerText = getTextLabel(vVisual);
+
+            let scoreWord = Math.min(100, Math.round((vTeks * 8) + (10 - vAngka) * 2));
+            let scoreExcel = Math.min(100, Math.round((vAngka * 9) + (10 - vVisual) * 1));
+            let scorePpt = Math.min(100, Math.round((vVisual * 8.5) + (vTeks * 1.5)));
+
+            document.getElementById('bar-word').style.width = scoreWord + '%';
+            document.getElementById('score-word').innerText = scoreWord + '%';
+
+            document.getElementById('bar-excel').style.width = scoreExcel + '%';
+            document.getElementById('score-excel').innerText = scoreExcel + '%';
+
+            document.getElementById('bar-ppt').style.width = scorePpt + '%';
+            document.getElementById('score-ppt').innerText = scorePpt + '%';
+
+            const recBox = document.getElementById('sim-recommendation');
+            if (scoreExcel >= scoreWord && scoreExcel >= scorePpt) {
+                recBox.innerHTML = "💡 <strong>Rekomendasi Pak Sandi:</strong> Gunakan <strong>Pengolah Angka (Excel/Sheets)</strong>! Tugas ini membutuhkan pengolahan tabel, formula matematis, atau analisis data otomatis.";
+            } else if (scoreWord >= scoreExcel && scoreWord >= scorePpt) {
+                recBox.innerHTML = "💡 <strong>Rekomendasi Pak Sandi:</strong> Gunakan <strong>Pengolah Kata (Word/Docs)</strong>! Tugas ini berfokus pada penyusunan naskah narasi, paragraf, dan penataan halaman rapi.";
+            } else {
+                recBox.innerHTML = "💡 <strong>Rekomendasi Pak Sandi:</strong> Gunakan <strong>Aplikasi Presentasi / Desain (PowerPoint/Canva)</strong>! Tugas ini sangat mengandalkan daya tarik visual, slide, dan pameran media.";
+            }
+        }
+
+        function getTextLabel(val) {
+            if (val <= 3) return "Rendah";
+            if (val <= 7) return "Sedang";
+            return "Tinggi / Utama";
+        }
+
+        function selectOption(qNum, option, btnEl) {
+            userAnswers.mc[qNum] = option;
+            const parent = btnEl.parentElement;
+            parent.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+            btnEl.classList.add('selected');
+        }
+
+        function selectTF(qNum, boolVal, btnEl) {
+            userAnswers.tf[qNum] = boolVal;
+            const parent = btnEl.parentElement;
+            parent.querySelectorAll('.tf-btn').forEach(btn => {
+                btn.classList.remove('selected-true', 'selected-false');
+            });
+            if (boolVal) {
+                btnEl.classList.add('selected-true');
+            } else {
+                btnEl.classList.add('selected-false');
+            }
+        }
+
+        async function evaluateQuiz(e) {
+            e.preventDefault();
+
+            const namaSiswa = document.getElementById('input-nama').value.trim();
+            const kelasSiswa = document.getElementById('input-kelas').value.trim();
+
+            if (!namaSiswa || !kelasSiswa) {
+                alert("⚠️ Harap isi Nama Lengkap dan Kelas terlebih dahulu!");
+                document.getElementById('input-nama').focus();
+                return;
+            }
+
+            let totalCorrect = 0;
+            const totalQuestions = 15;
+            let detailPg = [];
+            let detailTf = [];
+            let detailMatching = [];
+
+            // Evaluasi Pilihan Ganda
+            for (let i = 1; i <= 5; i++) {
+                const userAns = userAnswers.mc[i] || "-";
+                const key = answerKey[i];
+                const fbBox = document.getElementById(`feedback-${i}`);
+
+                fbBox.classList.add('show');
+                if (userAns === key.correct) {
+                    totalCorrect++;
+                    fbBox.className = "feedback-box show correct";
+                    fbBox.innerHTML = `✅ <strong>Jawabanmu Benar!</strong> ${key.exp}`;
+                } else {
+                    fbBox.className = "feedback-box show incorrect";
+                    fbBox.innerHTML = `❌ <strong>Kurang Tepat.</strong> Jawaban yang benar adalah <strong>${key.correct}</strong>. <br>${key.exp}`;
+                }
+                detailPg.push(`Q${i}:${userAns}`);
+            }
+
+            // Evaluasi Benar/Salah
+            for (let i = 6; i <= 10; i++) {
+                const userAns = userAnswers.tf[i];
+                const key = answerKey[i];
+                const fbBox = document.getElementById(`feedback-${i}`);
+
+                fbBox.classList.add('show');
+                if (userAns === key.correct) {
+                    totalCorrect++;
+                    fbBox.className = "feedback-box show correct";
+                    fbBox.innerHTML = `✅ <strong>Analisis Tepat!</strong> ${key.exp}`;
+                } else {
+                    fbBox.className = "feedback-box show incorrect";
+                    fbBox.innerHTML = `❌ <strong>Analisis Kurang Tepat.</strong> <br>${key.exp}`;
+                }
+                detailTf.push(`Q${i}:${userAns === undefined ? '-' : (userAns ? 'BENAR' : 'SALAH')}`);
+            }
+
+            // Evaluasi Menjodohkan
+            for (let i = 11; i <= 15; i++) {
+                const selectEl = document.getElementById(`match-${i}`);
+                const userVal = selectEl.value;
+                const key = answerKey[i];
+                const fbBox = document.getElementById(`feedback-${i}`);
+
+                fbBox.classList.add('show');
+                if (userVal === key.correct) {
+                    totalCorrect++;
+                    fbBox.className = "feedback-box show correct";
+                    fbBox.innerHTML = `✅ <strong>Sesuai!</strong> ${key.exp}`;
+                } else {
+                    fbBox.className = "feedback-box show incorrect";
+                    fbBox.innerHTML = `❌ <strong>Kurang Pas.</strong> ${key.exp}`;
+                }
+                detailMatching.push(`Q${i}:${userVal || '-'}`);
+            }
+
+            const finalScore = Math.round((totalCorrect / totalQuestions) * 100);
+
+            // Tampilkan Modal Skor
+            document.getElementById('score-student-info').innerHTML = `👤 <strong>Nama:</strong> ${namaSiswa} &nbsp;|&nbsp; 🏫 <strong>Kelas:</strong> ${kelasSiswa}`;
+
+            const scoreModal = document.getElementById('score-modal');
+            const scoreBadge = document.getElementById('score-badge');
+            const scoreTitle = document.getElementById('score-title');
+            const scoreDesc = document.getElementById('score-desc');
+
+            scoreModal.classList.add('show');
+            scoreBadge.innerText = finalScore;
+
+            if (finalScore >= 85) {
+                scoreTitle.innerText = "🌟 Luar Biasa! Mumtaz!";
+                scoreDesc.innerText = `Kamu berhasil menjawab ${totalCorrect} dari 15 soal dengan sangat akurat. Kamu sudah mahir menganalisis efisiensi aplikasi TIK untuk madrasah!`;
+            } else if (finalScore >= 70) {
+                scoreTitle.innerText = "👍 Bagus Sekali!";
+                scoreDesc.innerText = `Kamu berhasil menjawab ${totalCorrect} dari 15 soal dengan benar. Tinjau kembali pembahasannya untuk memperdalam pemahamanmu.`;
+            } else {
+                scoreTitle.innerText = "💪 Tetap Semangat Belajar!";
+                scoreDesc.innerText = `Kamu menjawab ${totalCorrect} dari 15 soal. Pelajari kembali ringkasan materi dan cobalah fitur Laboratorium Simulasi!`;
+            }
+
+            scoreModal.scrollIntoView({ behavior: 'smooth' });
+
+            // Kirim Data Nilai ke Google Spreadsheet via Google Apps Script
+            const dbStatus = document.getElementById('db-status');
+            dbStatus.className = "db-status-badge db-status-loading";
+            dbStatus.innerText = "⏳ Mengirim data nilai ke Google Spreadsheet database...";
+
+            const payload = {
+                nama: namaSiswa,
+                kelas: kelasSiswa,
+                skor: finalScore,
+                jumlahBenar: totalCorrect,
+                pilihanGanda: detailPg.join(", "),
+                benarSalah: detailTf.join(", "),
+                menjodohkan: detailMatching.join(", ")
+            };
+
+            if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("PASTE_URL")) {
+                dbStatus.className = "db-status-badge db-status-error";
+                dbStatus.innerHTML = "⚠️ <strong>Database Offline:</strong> URL Google Apps Script belum dikonfigurasi. (Klik tombol ⚙️ DB di atas untuk mengatur).";
+                return;
+            }
+
+            try {
+                // Menggunakan mode text/plain untuk menghindari batasan CORS preflight pada GAS
+                await fetch(GAS_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                dbStatus.className = "db-status-badge db-status-success";
+                dbStatus.innerHTML = "✅ <strong>Tersimpan!</strong> Data nilai berhasil terkirim ke Google Spreadsheet Guru.";
+            } catch (err) {
+                console.error("Gagal mengirim data:", err);
+                dbStatus.className = "db-status-badge db-status-error";
+                dbStatus.innerHTML = "❌ <strong>Gagal Kirim:</strong> Periksa koneksi internetmu.";
+            }
+        }
+
+        function resetQuiz() {
+            userAnswers.mc = {};
+            userAnswers.tf = {};
+            
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected', 'correct-ans', 'wrong-ans'));
+            document.querySelectorAll('.tf-btn').forEach(btn => btn.classList.remove('selected-true', 'selected-false'));
+            document.querySelectorAll('.match-select').forEach(sel => sel.value = "");
+            document.getElementById('input-nama').value = "";
+            document.getElementById('input-kelas').value = "";
+            document.querySelectorAll('.feedback-box').forEach(fb => {
+                fb.classList.remove('show', 'correct', 'incorrect');
+                fb.innerHTML = "";
+            });
+
+            document.getElementById('score-modal').classList.remove('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.onload = function() {
+            updateSimulation();
+        };
+    </script>
+</body>
+</html>
